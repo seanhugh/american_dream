@@ -1,0 +1,81 @@
+---
+title: "Final"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+```
+
+```{r problem1, echo = FALSE}
+
+baseline_estimates <- read_csv("data/table1_national_absmob_by_cohort_parpctile.csv")
+
+simple_plot <- baseline_estimates %>% select(cohort, cohort_mean)
+
+# Data on income by overall pop
+
+ggplot(simple_plot, aes(x = cohort, y = cohort_mean)) + 
+  geom_line(size = .75) + geom_point(size = 3) + 
+  coord_cartesian(ylim = c(.40, 1.00)) +
+  scale_y_continuous(labels = scales::percent)
+
+# Splitting Data up by income bracket: who is making more $$?
+
+# Inspiration from stack overflow
+
+grouped_plot <- baseline_estimates %>% 
+   rowwise %>% 
+   do(as.data.frame(.) %>% { 
+      subs <- select(., abs_mob_pos_par_p1:abs_mob_pos_par_p100)
+      mutate(., Sum = subs %>% sum,
+                Mean = subs %>% mean) 
+      } ) %>%
+   ungroup %>% 
+  mutate(Sum = round(Sum / 100, 3)) %>% 
+  select(cohort, Sum, cohort_mean, par_frac0)
+
+# NEED TO FIGURE OUT WHY THERE IS A DIFFERENCE.... WHAT IS IT??
+
+# Plot results to show difference between my sum calc and the overall calc
+
+ggplot(grouped_plot, aes(x = cohort)) + 
+  geom_line(aes(y = cohort_mean), size = .75) + 
+  geom_line(aes(y = Sum), size = .75) + 
+  coord_cartesian(ylim = c(.40, 1.00)) +
+  scale_y_continuous(labels = scales::percent)
+
+
+```
+
+
+```{r}
+
+# Plotting all 100 different datasets on 1 graph
+
+# Use the gather() function to tidy data
+
+tidy_data <- baseline_estimates %>% 
+  gather("income_bracket", "probability_exceed", abs_mob_pos_par_p1:abs_mob_pos_par_p100)
+
+
+# PLOT FOR EACH INDIVIDUAL INCOME BRACKET
+
+# Use ggplot to plot all groups onto a graph
+
+ggplot(tidy_data, aes(x = cohort, y = probability_exceed, group = income_bracket)) + 
+  geom_line(size = .75, alpha = .1) + 
+  geom_point(size = 2, alpha = .1) + 
+  coord_cartesian(ylim = c(.0, 1.00)) +
+  scale_y_continuous(labels = scales::percent)
+
+# Create a function to get the number from a dataset string
+
+
+
+```
