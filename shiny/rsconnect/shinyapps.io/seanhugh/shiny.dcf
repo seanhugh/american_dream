@@ -1,0 +1,12 @@
+name: shiny
+title: shiny
+username:
+account: seanhugh
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 545273
+bundleId: 1680661
+url: https://seanhugh.shinyapps.io/shiny/
+when: 1541308659.19806
+asMultiple: FALSE
+asStatic: FALSE
