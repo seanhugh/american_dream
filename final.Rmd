@@ -126,20 +126,56 @@ write_rds(tidy_data_numeric, "./shiny/chart2.rds")
 
 spread_data <- tidy_data_numeric %>% select(cohort, income_bracket, probability_exceed) %>% 
   spread(key = income_bracket, value = probability_exceed) %>% 
-  mutate(data1 = `1` - `100`,
-        data10 = (`1`+`2`+`4`+`5`+`6`+`7`+`8`+`9`+`10`)/10 - 
+  mutate(One = `1` - `100`, 
+         Ten = (`1`+`2`+`4`+`5`+`6`+`7`+`8`+`9`+`10`)/10 - 
                  (`91`+`92`+`93`+`94`+`95`+`96`+`97`+`98`+`99`+`100`)/10,
-        data50 = (`1`+`2`+`3`+`4`+`5`+`6`+`7`+`8`+`9`+`10`+`11`+`12`+`13`+
+        Fifty = (`1`+`2`+`3`+`4`+`5`+`6`+`7`+`8`+`9`+`10`+`11`+`12`+`13`+
                  `14`+`15`+`16`+`17`+`18`+`19`+`20`+`21`+`22`+`23`+`24`+`25`+
                  `26`+`27`+`28`+`29`+`30`+`31`+`32`+`33`+`34`+`35`+`36`+`37`+
                 `38`+`39`+`40`+`41`+`42`+`43`+`44`+`45`+`46`+`47`+`48`+`49`+
-                `50`)/50 - (`51`-`52`-`53`-`54`-`55`-`56`-`57`-`58`-`59`-`60`-`61`-`62`-
+                `50`)/50 + ( -`51`-`52`-`53`-`54`-`55`-`56`-`57`-`58`-`59`-`60`-`61`-`62`-
                 `63`-`64`-`65`-`66`-`67`-`68`-`69`-`70`-`71`-`72`-`73`-`74`-`75`-
                 `76`-`77`-`78`-`79`-`80`-`81`-`82`-`83`-`84`-`85`-`86`-`87`-`88`-
-                `89`-`90`-`91`-`92`-`93`-`94`-`95`-`96`-`97`-`98`-`99`-`100`)/50 %>% 
-  select(cohort, data1, data10, data50) %>% 
-  gather("difference", "data", data1:data50)
+                `89`-`90`-`91`-`92`-`93`-`94`-`95`-`96`-`97`-`98`-`99`-`100`)/50) %>% 
+  select(cohort, One:Fifty) %>% 
+  gather("Percentile", "data", One:Fifty) 
 
-ggplot(spread_data, aes(x = cohort, y = data, color = difference)) + geom_line()
+ggplot(spread_data, aes(x = cohort, y = data, color = Percentile)) + 
+  geom_line(size = 2) +
+  labs(title = "Disparities Between Percentage Chances of Earning More than Parents",
+       y = "Dif. between top x percentile and bottom x percentile",
+       x = "Year")
+
+# Save chart data to RDS file
+
+write_rds(spread_data, "./shiny/chart3.rds")
+
+```
+
+
+```{r}
+
+### Chart 4 ###
+
+inequality_data <- read_csv("data/Income_Inequality/data.csv")
+
+filtered_spread_data <- spread_data %>% filter(Percentile == "Ten") %>% 
+  mutate(year = cohort, percentage = data) %>% 
+  select(year, percentage)
+
+spread_data2 <- left_join(filtered_spread_data, inequality_data, by = "year", suffix = c(".dif", ".inequality"))
+
+spread_data2 %>% 
+  ggplot(aes(x = year)) + 
+  geom_line(aes(y = percentage.dif, colour = "Top vs. Bottom 10% Disparity")) +
+  geom_line(aes(y = percentage.inequality * 2.5, colour = "Wealth Held by Top 1%")) +
+  scale_y_continuous(sec.axis = sec_axis(~./2.5, name = "% of Wealth Heald by top 1%")) +
+  labs(title = "Disparities Between Top and Bottom 10th Percentile vs. Income Inequality",
+       y = "Dif. between top 10% percentile and bottom 10% percentile",
+       x = "Year")
+
+# Save chart data to RDS file
+
+write_rds(spread_data2, "./shiny/chart4.rds")
 
 ```
