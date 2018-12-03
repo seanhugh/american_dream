@@ -179,3 +179,126 @@ spread_data2 %>%
 write_rds(spread_data2, "./shiny/chart4.rds")
 
 ```
+
+```{r}
+
+inequality_data2 <- inequality_data %>% 
+  mutate(year = year - 28)
+
+spread_data3 <- left_join(filtered_spread_data, inequality_data2, by = "year", suffix = c(".dif", ".inequality"))
+
+spread_data3 %>% 
+  ggplot(aes(x = year)) + 
+  geom_line(aes(y = percentage.dif, colour = "Top vs. Bottom 10% Disparity")) +
+  geom_line(aes(y = percentage.inequality * 2.5, colour = "Wealth Held by Top 1%")) +
+  scale_y_continuous(sec.axis = sec_axis(~./2.5, name = "% of Wealth Heald by top 1%")) +
+  labs(title = "Disparities Between Top and Bottom 10th Percentile vs. Income Inequality",
+       y = "Dif. between top 10% percentile and bottom 10% percentile",
+       x = "Year")
+
+# Save chart data to RDS file
+
+write_rds(spread_data3, "./shiny/chart5.rds")
+
+```
+
+```{r}
+
+### CHART 6 ###
+
+# Left Join Data
+simple_plot_new <- simple_plot %>% mutate(year = cohort,
+                                          percentage = cohort_mean) %>% 
+  select(year, percentage)
+
+spread_data4 <- left_join(simple_plot_new, inequality_data, by = "year", suffix = c(".simple", ".inequality"))
+
+# Data on income by overall pop
+ggplot(spread_data4, aes(x = year)) +
+  geom_line(aes(y = percentage.simple, colour = "Pct. of Children Earning More than their Parents"), size = .75) +
+  geom_point(aes(y = percentage.simple, colour = "Pct. of Children Earning More than their Parents"), size = 1.5) +
+  geom_line(aes(y = percentage.inequality * 6, colour = "Wealth Held by Top 1%"), size = .75) +
+  geom_point(aes(y = percentage.inequality * 6, colour = "Wealth Held by Top 1%"), size = 1.5) +
+  scale_y_continuous(sec.axis = sec_axis(~./6, name = "% of Wealth Heald by top 1%")) +
+  labs(title = "Disparities Between Top and Bottom 10th Percentile vs. Income Inequality",
+       y = "Dif. between top 10% percentile and bottom 10% percentile",
+       x = "Year") +
+  theme_bw() +
+  theme(axis.title.x = element_text(colour = "#9d9eac"),
+        axis.title.y = element_text(colour = "#9d9eac")) +
+  theme(legend.position="bottom")
+
+# Save chart data to RDS file
+
+write_rds(spread_data4, "./shiny/chart6.rds")
+
+```
+
+```{r}
+
+### CHART 7 ###
+
+spread_data5 <- left_join(simple_plot_new, inequality_data2, by = "year", suffix = c(".simple", ".inequality"))
+
+# Data on income by overall pop
+ggplot(spread_data5, aes(x = year)) +
+  geom_line(aes(y = percentage.simple, colour = "Pct. of Children Earning More than their Parents"), size = .75) +
+  geom_point(aes(y = percentage.simple, colour = "Pct. of Children Earning More than their Parents"), size = 1.5) +
+  geom_line(aes(y = percentage.inequality * 4, colour = "Wealth Held by Top 1%"), size = .75) +
+  geom_point(aes(y = percentage.inequality * 4, colour = "Wealth Held by Top 1%"), size = 1.5) +
+  scale_y_continuous(sec.axis = sec_axis(~./4, name = "% of Wealth Heald by top 1%")) +
+  labs(title = "Disparities Between Top and Bottom 10th Percentile vs. Income Inequality",
+       y = "Dif. between top 10% percentile and bottom 10% percentile",
+       x = "Year") +
+  theme_bw() +
+  theme(axis.title.x = element_text(colour = "#9d9eac"),
+        axis.title.y = element_text(colour = "#9d9eac")) +
+  theme(legend.position="bottom")
+
+# Save chart data to RDS file
+
+write_rds(spread_data5, "./shiny/chart7.rds")
+
+```
+
+```{r}
+
+### STATE SHINY APP PLOT ###
+
+library(maps)
+library(mapdata)
+library(openintro)
+
+baseline_estimates <- read_csv("data/state_data.csv") %>% 
+  mutate(region = tolower(abbr2state(state_name)))
+
+states <- map_data("state")
+
+joined_state <- inner_join(states, baseline_estimates, by = "region")
+
+
+ditch_the_axes <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+  )
+
+
+joined_state %>% filter(cohort == 1940) %>% 
+ggplot() + 
+  geom_polygon(aes(x = long, y = lat, fill = cohort_mean, group = group), color = "white") + 
+  coord_fixed(1.3) +
+  ditch_the_axes
+
+# Save data to RDS file
+
+write_rds(joined_state, "./shiny/chart8.rds")
+
+```
+
+
+
+
