@@ -105,6 +105,10 @@ ui <- dashboardPage(
       ),
       
       tabItem(tabName = "explore",
+              
+              radioButtons("year", "Distribution type:",
+                           c(1940, 1950, 1960, 1980)),
+              
               h2(strong("Explore")),
               plotOutput("plot8")
       )
@@ -221,11 +225,13 @@ server <- function(input, output) {
   })
   
   output$plot8 <- renderPlot({
-    joined_state %>% filter(cohort == 1940) %>% 
+    chart8 %>% filter(cohort == input$year) %>% 
       ggplot() + 
       geom_polygon(aes(x = long, y = lat, fill = cohort_mean, group = group), color = "white") + 
       coord_fixed(1.3) +
-      ditch_the_axes
+      ditch_the_axes  +
+      scale_fill_gradientn(colours = c("#ce2828", "#7a2416", "#14254f", "#1e6612", "#41ce28"),
+                           limits = c(.3,1))
   })
   
 }
