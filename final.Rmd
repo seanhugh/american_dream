@@ -283,8 +283,11 @@ ditch_the_axes <- theme(
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
-  axis.title = element_blank()
-  )
+  axis.title = element_blank(),
+  panel.background = element_rect(fill = "#ecf0f5"),
+  plot.background = element_rect(fill = "#ecf0f5"),
+  legend.background = element_rect(fill = "#ecf0f5")
+)
 
 
 joined_state %>% filter(cohort == 1950) %>% 

@@ -24,7 +24,10 @@ ditch_the_axes <- theme(
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
-  axis.title = element_blank()
+  axis.title = element_blank(),
+  panel.background = element_rect(fill = "#ecf0f5"),
+  plot.background = element_rect(fill = "#ecf0f5"),
+  legend.background = element_rect(fill = "#ecf0f5")
 )
 
 ui <- dashboardPage(
@@ -34,7 +37,6 @@ ui <- dashboardPage(
       menuItem("Home", tabName = "dashboard", icon = icon("home")),
       menuItem("Income Inequality", tabName = "inequality", icon = icon("line-chart")),
       menuItem("Income Bracket", tabName = "income", icon = icon("dollar")),
-      menuItem("Time Period", tabName = "time", icon = icon("calendar")),
       menuItem("Explore the Data", tabName = "explore", icon = icon("globe"))
     )
   ),
@@ -100,17 +102,14 @@ ui <- dashboardPage(
               p("By adjusting the inequality data we see a clear positive correlation between the two datasets.")
       ),
       
-      tabItem(tabName = "time",
-              h2(strong("Time"))
-      ),
-      
       tabItem(tabName = "explore",
               
-              radioButtons("year", "Distribution type:",
-                           c(1940, 1950, 1960, 1980)),
+              h2(strong("Pct. Chance of Earning More than Parents by State and Year")),
+              plotOutput("plot8"),
               
-              h2(strong("Explore")),
-              plotOutput("plot8")
+              
+              radioButtons("year", "Year:",
+                           c(1940, 1950, 1960, 1980))
       )
       
       
@@ -229,9 +228,11 @@ server <- function(input, output) {
       ggplot() + 
       geom_polygon(aes(x = long, y = lat, fill = cohort_mean, group = group), color = "white") + 
       coord_fixed(1.3) +
+      theme_bw() +
       ditch_the_axes  +
       scale_fill_gradientn(colours = c("#ce2828", "#7a2416", "#14254f", "#1e6612", "#41ce28"),
-                           limits = c(.3,1))
+                           limits = c(.3,1), 
+                           name = "Pct. Chance")
   })
   
 }
