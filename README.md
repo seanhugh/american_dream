@@ -1,11 +1,18 @@
-# Gov1005 Final project
+# Analysis of "The American Dream" Dataset
+
+[Click Here to Explore the Project's Shiny Web App](https://seanhugh.shinyapps.io/shiny/)
 
 ### Overview
 
-Final Data Project for gov1005. For this project I will be comparing two datasets in an attempt to explore the realtionship between some psychological traits of a country's inhabitants and the financial traits of the country. (i.e. generosity vs. income inequality)
+Why has the probability that a child will make more than their parents decreased since 1940? I analyzed "The American Dream" dataset by Raj Chetty which poses this question. He concludes that income inequality is the main source of the decreasing probability. I compare his compiled data with US income inequality statistics to test his conclusion. I also analyze the dataset with regards to different income brackets to see how these changes have affected the poor and the rich.
 
-### Data Set 1
-I will be getting data involving psychology of monetary transactions that is used in the following paper: https://pdfs.semanticscholar.org/4955/957218943549c0fcd0693fa147bf136ecbc3.pdf?_ga=2.81044369.722756004.1535632846-1956353776.1505570584. I am still looking for the best way to get this data. (besides just copying it from their charts).
+### Background
 
-### Data Set 2
-I am still looking for the best dataset to use for income inequality data in the different countries. Currently, I have found some databases from world bank that look interesting.
+[Raj Chetty](https://economics.harvard.edu/people/raj-chetty) is a proffesor at Harvard University. His paper, [The American Dream](https://opportunityinsights.org/paper/the-fading-american-dream/) is a great resource to further explore this topic. This project has been featured in several reputable news sources including [The New York Times](https://www.nytimes.com/2016/12/08/opinion/the-american-dream-quantified-at-last.html) and [The Atlantic](https://www.theatlantic.com/business/archive/2014/01/why-is-the-american-dream-dead-in-the-south/283313/).
+
+### Data Sources
+
+I used data from the [American Dream Data]("https://opportunityinsights.org/data/?geographic_level=0&topic=0&paper_id=546#resource-listing"). Specifically I used the "Absolute Income Mobility by Child Birth Cohort and State" and "
+Fading American Dream: Baseline Estimates of Absolute Mobility by Parent Income Percentile and Child Birth Cohort" datasets. I compared these datasets with US inequality data drawn from the [World Inequality Database](https://wid.world/data/#countrytimeseries/sfiinc_p99p100_z/US/1913/2015/eu/k/p/yearly/s).
+
+Created by Sean Hughes
