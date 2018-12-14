@@ -4,7 +4,16 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+
+# THIS DOCUMENT IS NOT INTENDED TO BE VIEWED. IT IS SIMPLY AN ORGANIZED
+#   WAY OF CREATING AND SAVING THE GRAPHS FOR THE SHINY APP
+
+# After the graphs are created here, their data is saved as an RDS and 
+#   the code used to create them is copied and used in the shiny app
+
 knitr::opts_chunk$set(echo = TRUE)
+
+# Load Required Libraries
 
 library(tidyverse)
 library(dplyr)
@@ -15,9 +24,9 @@ library(stringr)
 
 ```{r p1, echo = FALSE, warning = FALSE, include = FALSE}
 
-baseline_estimates <- read_csv("data/table1_national_absmob_by_cohort_parpctile.csv")
+# DOwnload data from Raj Chetty's Dataset "The American Dream"
 
-simple_plot <- baseline_estimates %>% select(cohort, cohort_mean)
+baseline_estimates <- read_csv("data/table1_national_absmob_by_cohort_parpctile.csv")
 
 
 ```
@@ -25,8 +34,17 @@ simple_plot <- baseline_estimates %>% select(cohort, cohort_mean)
 ```{r p2, echo = FALSE, warning = FALSE}
 
 ### CHART 1 ###
+# Goal in this chart is to recreate the chart from the dataset
 
-# Data on income by overall pop
+# Select the elements that we will use to plot in chart 1
+
+simple_plot <- baseline_estimates %>% select(cohort, cohort_mean)
+
+# Use ggplot to plot the chart. Use a combination of line and
+#   point plots to createe the desired aesthetic effect
+# Use the ggplot theme option and axis titles to correctly style
+#   the graph
+
 ggplot(simple_plot, aes(x = cohort, y = cohort_mean)) + 
   geom_line(size = .75) + geom_point(size = 3) + 
   coord_cartesian(ylim = c(.48, 1.00)) +
@@ -39,6 +57,7 @@ ggplot(simple_plot, aes(x = cohort, y = cohort_mean)) +
         axis.title.y = element_text(colour = "#9d9eac"))
 
 # save the data to an RDS file for use in Shiny
+
 write_rds(simple_plot, "./shiny/chart1.rds")
 
 ```
@@ -48,10 +67,19 @@ write_rds(simple_plot, "./shiny/chart1.rds")
 ### Chart 2 ###
 
 # Splitting Data up by income bracket: who is making more $$?
-# Inspiration from stack overflow
+# Some inspiration from stack overflow
 
 grouped_plot <- baseline_estimates %>% 
+  
+  # Used to allow the rows to be acted upon individually
+  
    rowwise %>% 
+  
+  # Gather all of the different columns from percentiles 1 -> 100, calculate
+  #   the sums across all percentiles and the means. This will allow us to 
+  #   test the accuracy of our data compared to the previous dataset from
+  #   chart 1
+  
    do(as.data.frame(.) %>% { 
       subs <- select(., abs_mob_pos_par_p1:abs_mob_pos_par_p100)
       mutate(., Sum = subs %>% sum,
@@ -61,7 +89,8 @@ grouped_plot <- baseline_estimates %>%
   mutate(Sum = round(Sum / 100, 3)) %>% 
   select(cohort, Sum, cohort_mean, par_frac0)
 
-# Plot results to show difference between my sum calc and the overall calc
+# Plot results to show difference between the 2 previous graphs
+
 ggplot(grouped_plot, aes(x = cohort)) + 
   geom_line(aes(y = cohort_mean), size = .75) + 
   geom_line(aes(y = Sum), size = .75) + 
@@ -122,7 +151,8 @@ write_rds(tidy_data_numeric, "./shiny/chart2.rds")
 ### Chart 3 ###
 
 # Plot key comparisons between income bracket groups
-
+# I couldn't find any better what of getting specific groups
+#   of income brackets so I just wrote them all out
 
 spread_data <- tidy_data_numeric %>% select(cohort, income_bracket, probability_exceed) %>% 
   spread(key = income_bracket, value = probability_exceed) %>% 
@@ -137,8 +167,18 @@ spread_data <- tidy_data_numeric %>% select(cohort, income_bracket, probability_
                 `63`-`64`-`65`-`66`-`67`-`68`-`69`-`70`-`71`-`72`-`73`-`74`-`75`-
                 `76`-`77`-`78`-`79`-`80`-`81`-`82`-`83`-`84`-`85`-`86`-`87`-`88`-
                 `89`-`90`-`91`-`92`-`93`-`94`-`95`-`96`-`97`-`98`-`99`-`100`)/50) %>% 
+  
+  # Use select to choose the correct columns
+  
   select(cohort, One:Fifty) %>% 
+  
+  # Use gather to put the data in a tidy format
+  
   gather("Percentile", "data", One:Fifty) 
+
+
+# Use ggplot to plot the spread data. Use color to split up the chart
+#   by percentile
 
 ggplot(spread_data, aes(x = cohort, y = data, color = Percentile)) + 
   geom_line(size = 2) +
@@ -157,13 +197,25 @@ write_rds(spread_data, "./shiny/chart3.rds")
 
 ### Chart 4 ###
 
+# Use read_csv to read in the income inequality data from the file
+
 inequality_data <- read_csv("data/Income_Inequality/data.csv")
+
+# Use filter to examine the data regarding the top and bottom 10th percentiles
+#   from the Chetty Dataset. Use mutate to change column names so that the 
+#   left join of the two datasets is nice
 
 filtered_spread_data <- spread_data %>% filter(Percentile == "Ten") %>% 
   mutate(year = cohort, percentage = data) %>% 
   select(year, percentage)
 
+# Use left_join to join the inequality data and the american dream data 
+
 spread_data2 <- left_join(filtered_spread_data, inequality_data, by = "year", suffix = c(".dif", ".inequality"))
+
+# Use ggplot to plot the data. Use two geom_lines to plot
+#   both of the different datasets, and use a scale_y_continous to
+#   create a second axis
 
 spread_data2 %>% 
   ggplot(aes(x = year)) + 
@@ -182,10 +234,21 @@ write_rds(spread_data2, "./shiny/chart4.rds")
 
 ```{r}
 
+# Use mutate to subtract 28 years from the dataset
+#   we do this to adjust the inequality data for adulthood.
+#   I.e. we want the inequality data for a given year to 
+#   reflect the inequality a child born that year will 
+#   experiece as an adult
+
 inequality_data2 <- inequality_data %>% 
   mutate(year = year - 28)
 
+# Use left join to join the new inequality dataset and 
+#   the american dream data
+
 spread_data3 <- left_join(filtered_spread_data, inequality_data2, by = "year", suffix = c(".dif", ".inequality"))
+
+# Use the same ggplot command from the last code chunk to display the code
 
 spread_data3 %>% 
   ggplot(aes(x = year)) + 
@@ -206,14 +269,21 @@ write_rds(spread_data3, "./shiny/chart5.rds")
 
 ### CHART 6 ###
 
-# Left Join Data
+# Use mutate and select to prepare american dream data for a left_join
+
 simple_plot_new <- simple_plot %>% mutate(year = cohort,
                                           percentage = cohort_mean) %>% 
   select(year, percentage)
 
+# Use left_join to join the 1% data and the inequality data
+
 spread_data4 <- left_join(simple_plot_new, inequality_data, by = "year", suffix = c(".simple", ".inequality"))
 
-# Data on income by overall pop
+# Use ggplot to plot the percentage of children earning more
+#   than their parents vs. the wealth held by the top 1%
+# We once again use scale_y_continous to add a second axis
+# We also use theme to style the chart
+
 ggplot(spread_data4, aes(x = year)) +
   geom_line(aes(y = percentage.simple, colour = "Pct. of Children Earning More than their Parents"), size = .75) +
   geom_point(aes(y = percentage.simple, colour = "Pct. of Children Earning More than their Parents"), size = 1.5) +
@@ -238,9 +308,13 @@ write_rds(spread_data4, "./shiny/chart6.rds")
 
 ### CHART 7 ###
 
+# Use left_join to join the american dream data with the inequality
+#   data that has been modified in order to account for age of adulthood
+
 spread_data5 <- left_join(simple_plot_new, inequality_data2, by = "year", suffix = c(".simple", ".inequality"))
 
-# Data on income by overall pop
+# Use the same ggplot command from the last code chunk to output the new graph
+
 ggplot(spread_data5, aes(x = year)) +
   geom_line(aes(y = percentage.simple, colour = "Pct. of Children Earning More than their Parents"), size = .75) +
   geom_point(aes(y = percentage.simple, colour = "Pct. of Children Earning More than their Parents"), size = 1.5) +
@@ -263,19 +337,32 @@ write_rds(spread_data5, "./shiny/chart7.rds")
 
 ```{r}
 
-### STATE SHINY APP PLOT ###
+### AMERICAN STATE SHINY APP PLOT ###
+
+# Load required libraries for the map plot
+
+# Took inspiration from http://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html
 
 library(maps)
 library(mapdata)
 library(openintro)
 
+# Use read_csv to load American Dream location data
+
 baseline_estimates <- read_csv("data/state_data.csv") %>% 
   mutate(region = tolower(abbr2state(state_name)))
 
+# Use the mapdata library to load data for state locations
+
 states <- map_data("state")
+
+# Use inner_join to join the america dream state data with the states
+#   data in order to properly color the map
 
 joined_state <- inner_join(states, baseline_estimates, by = "region")
 
+# Create a theme that eliminates whitespace around the map and properly
+#   colors it in
 
 ditch_the_axes <- theme(
   axis.text = element_blank(),
@@ -289,6 +376,14 @@ ditch_the_axes <- theme(
   legend.background = element_rect(fill = "#ecf0f5")
 )
 
+# User filter to select a current year for the state data
+#   this will be made automatic in the shiny app, but here
+#   it is static
+# Use geom_polygon to plot out the map
+# Use the theme we made to style the map
+# Use scale_fill_gradientn to properly color the map in a way
+#    that it has both constant bounds on its colors and also
+#    allows the user to clearly see the value
 
 joined_state %>% filter(cohort == 1950) %>% 
 ggplot() + 
